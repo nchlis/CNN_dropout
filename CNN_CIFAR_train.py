@@ -68,7 +68,6 @@ add_BatchNorm = True
 dropout_rate_conv = [0.0, 0.0, 0.0]#1 value for each conv block
 dropout_rate_dense = 0.0
 
-#model_id='CNN_bn_'+str(add_BatchNorm)+'_dropConv_'+str(dropout_rate_conv[0])+'p0_dropDense_'+str(dropout_rate_dense)
 model_id='CNN_bn_'+str(add_BatchNorm)+'_dropConv_'+str(dropout_rate_conv[0])+'_'+\
 str(dropout_rate_conv[1])+'_'+str(dropout_rate_conv[2])+'_'+'dropDense_'+str(dropout_rate_dense)
 print('Build model...',model_id)
