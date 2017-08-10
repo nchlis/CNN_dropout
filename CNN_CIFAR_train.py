@@ -160,7 +160,7 @@ tic=time.time()
 hist=model.fit(X_tr, y_tr,
                  validation_data=(X_ts, y_ts),
                  epochs=max_epochs, batch_size=64, verbose=2,
-                 initial_epoch=100,callbacks=[checkpoint, csvlog])
+                 initial_epoch=0,callbacks=[checkpoint, csvlog])
 toc=time.time()
 
 #save final model, in case training for mor than max_epochs is necessary
