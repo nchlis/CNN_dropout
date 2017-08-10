@@ -3,13 +3,14 @@
 """
 Created on Tue Aug  1 10:31:56 2017
 
-@author: Nikos Chlis
+@author: nikos
 """
 import numpy as np
 import matplotlib.pyplot as plt
 import time
 #from sklearn.model_selection import train_test_split
 
+#from scipy.misc import toimage
 from keras.callbacks import ModelCheckpoint
 from keras.callbacks import CSVLogger
 from keras.models import Sequential
@@ -21,6 +22,10 @@ from keras.layers import Flatten
 from keras.layers.convolutional import Conv2D
 from keras.layers.convolutional import MaxPooling2D
 from keras.utils import np_utils
+from keras.models import load_model
+
+#from keras.datasets import mnist
+#(X_train, y_train), (X_test, y_test) = mnist.load_data()
 
 from keras.datasets import cifar10
 (X_tr, y_tr), (X_ts, y_ts) = cifar10.load_data()
@@ -55,15 +60,17 @@ X_ts=X_ts/2**8
 y_tr = np_utils.to_categorical(y_tr, num_classes)
 y_ts = np_utils.to_categorical(y_ts, num_classes)
 
-#%% set up a VGG-like model
+#%% set up the model
 # architecture inspired by http://torch.ch/blog/2015/07/30/cifar.html
-nfilters = [64,128,256]#number of filters of convs in each Conv block
-ndense = 512#number of units in each fully connected layer
+nfilters = [64,128,256]
+ndense = 512
 add_BatchNorm = True
-dropout_rate_conv = 0.2
-dropout_rate_dense = 0.5
+dropout_rate_conv = [0.0, 0.0, 0.0]#1 value for each conv block
+dropout_rate_dense = 0.0
 
-model_id='CNN_bn_'+str(add_BatchNorm)+'_dropConv_'+str(dropout_rate_conv)+'_dropDense_'+str(dropout_rate_dense)
+#model_id='CNN_bn_'+str(add_BatchNorm)+'_dropConv_'+str(dropout_rate_conv[0])+'p0_dropDense_'+str(dropout_rate_dense)
+model_id='CNN_bn_'+str(add_BatchNorm)+'_dropConv_'+str(dropout_rate_conv[0])+'_'+\#contunue on next line
+str(dropout_rate_conv[1])+'_'+str(dropout_rate_conv[2])+'_'+'dropDense_'+str(dropout_rate_dense)
 print('Build model...',model_id)
 
 model = Sequential()
@@ -74,13 +81,13 @@ model.add(Conv2D(nfilters[0], (3, 3), padding='same',
 if(add_BatchNorm==True):
     model.add(BatchNormalization(axis=-1))
 model.add(Activation('relu'))
-model.add(Dropout(dropout_rate_conv))
+model.add(Dropout(dropout_rate_conv[0]))
 
 model.add(Conv2D(nfilters[0], (3, 3)))
 if(add_BatchNorm==True):
     model.add(BatchNormalization(axis=-1))
 model.add(Activation('relu'))
-model.add(Dropout(dropout_rate_conv))
+model.add(Dropout(dropout_rate_conv[0]))
 
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
@@ -89,13 +96,13 @@ model.add(Conv2D(nfilters[1], (3, 3), padding='same'))
 if(add_BatchNorm==True):
     model.add(BatchNormalization(axis=-1))
 model.add(Activation('relu'))
-model.add(Dropout(dropout_rate_conv))
+model.add(Dropout(dropout_rate_conv[1]))
 
 model.add(Conv2D(nfilters[1], (3, 3)))
 if(add_BatchNorm==True):
     model.add(BatchNormalization(axis=-1))
 model.add(Activation('relu'))
-model.add(Dropout(dropout_rate_conv))
+model.add(Dropout(dropout_rate_conv[1]))
 
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
@@ -104,13 +111,13 @@ model.add(Conv2D(nfilters[2], (3, 3), padding='same'))
 if(add_BatchNorm==True):
     model.add(BatchNormalization(axis=-1))
 model.add(Activation('relu'))
-model.add(Dropout(dropout_rate_conv))
+model.add(Dropout(dropout_rate_conv[2]))
 
 model.add(Conv2D(nfilters[2], (3, 3)))
 if(add_BatchNorm==True):
     model.add(BatchNormalization(axis=-1))
 model.add(Activation('relu'))
-model.add(Dropout(dropout_rate_conv))
+model.add(Dropout(dropout_rate_conv[2]))
 
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
@@ -153,7 +160,7 @@ tic=time.time()
 hist=model.fit(X_tr, y_tr,
                  validation_data=(X_ts, y_ts),
                  epochs=max_epochs, batch_size=64, verbose=2,
-                 initial_epoch=0,callbacks=[checkpoint, csvlog])
+                 initial_epoch=100,callbacks=[checkpoint, csvlog])
 toc=time.time()
 
 #save final model, in case training for mor than max_epochs is necessary
